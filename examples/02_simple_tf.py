@@ -27,7 +27,7 @@ with tf.Session() as sess:
 # >> [[0 2]
 #	 [4 6]]
 
-tf.zeros(shape, dtype=tf.float32, name=None)
+#tf.zeros(shape, dtype=tf.float32, name=None)
 #creates a tensor of shape and all elements will be zeros (when ran in session)
 
 x = tf.zeros([2, 3], tf.int32) 
@@ -59,13 +59,13 @@ with tf.Session() as sess:
 
 t_1 = ['apple', 'peach', 'banana']
 x = tf.zeros_like(t_1) # ==> ['' '' '']
-y = tf.ones_like(t_1) # ==> TypeError: Expected string, got 1 of type 'int' instead.
+#y = tf.ones_like(t_1) # ==> TypeError: Expected string, got 1 of type 'int' instead.
 
 t_2 = [[True, False, False],
        [False, False, True],
        [False, True, False]] 
-x = tf.zeros_like(t_2) # ==> 2x2 tensor, all elements are False
-y = tf.ones_like(t_2) # ==> 2x2 tensor, all elements are True
+x = tf.zeros_like(t_2) # ==> 3x3 tensor, all elements are False
+y = tf.ones_like(t_2) # ==> 3x3 tensor, all elements are True
 with tf.Session() as sess:
 	print(sess.run([x, y]))
 
@@ -73,6 +73,7 @@ with tf.variable_scope('meh') as scope:
 	a = tf.get_variable('a', [10])
 	b = tf.get_variable('b', [100])
 
+# 'test' equal to './test', the latter is recommended
 writer = tf.summary.FileWriter('test', tf.get_default_graph())
 
 

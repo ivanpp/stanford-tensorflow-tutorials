@@ -33,6 +33,6 @@ b = tf.multiply(a, 3)
 with tf.Session() as sess:
 	# define a dictionary that says to replace the value of 'a' with 15
 	replace_dict = {a: 15}
-
+    
 	# Run the session, passing in 'replace_dict' as the value to 'feed_dict'
 	print(sess.run(b, feed_dict=replace_dict)) # >> 45

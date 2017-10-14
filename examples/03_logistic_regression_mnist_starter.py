@@ -16,7 +16,7 @@ import time
 # Define paramaters for the model
 learning_rate = 0.01
 batch_size = 128
-n_epochs = 10
+n_epochs = 25
 
 # Step 1: Read in data
 # using TF Learn's built in function to load MNIST data to the folder data/mnist
@@ -27,31 +27,38 @@ mnist = input_data.read_data_sets('/data/mnist', one_hot=True)
 # therefore, each image is represented with a 1x784 tensor
 # there are 10 classes for each image, corresponding to digits 0 - 9. 
 # Features are of the type float, and labels are of the type int
-
+X = tf.placeholder(tf.float32, [batch_size, 784])
+Y = tf.placeholder(tf.int32, [batch_size, 10])
 
 # Step 3: create weights and bias
 # weights and biases are initialized to 0
 # shape of w depends on the dimension of X and Y so that Y = X * w + b
 # shape of b depends on Y
-
+w = tf.Variable(tf.zeros([784, 10]), name='weights')
+b = tf.Variable(tf.zeros([1, 10]), name='bais')
 
 # Step 4: build model
 # the model that returns the logits.
 # this logits will be later passed through softmax layer
 # to get the probability distribution of possible label of the image
 # DO NOT DO SOFTMAX HERE
-
+logits = tf.matmul(X, w) + b
 
 # Step 5: define loss function
 # use cross entropy loss of the real labels with the softmax of logits
 # use the method:
 # tf.nn.softmax_cross_entropy_with_logits(logits, Y)
 # then use tf.reduce_mean to get the mean loss of the batch
-
+cross_entropy = tf.nn.softmax_cross_entropy_with_logits(labels=Y,
+                                                        logits=logits)
+loss = tf.reduce_mean(cross_entropy)
 
 # Step 6: define training op
 # using gradient descent to minimize loss
+optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss)
 
+#config = tf.ConfigProto(log_device_placement=True)
+#config.gpu_options.allow_growth = True
 
 with tf.Session() as sess:
 	start_time = time.time()
@@ -63,8 +70,8 @@ with tf.Session() as sess:
 		for _ in range(n_batches):
 			X_batch, Y_batch = mnist.train.next_batch(batch_size)
 			# TO-DO: run optimizer + fetch loss_batch
-			# 
-			# 
+			_, loss_batch = sess.run([optimizer, loss], 
+                                    feed_dict={X: X_batch, Y:Y_batch})
 			total_loss += loss_batch
 		print('Average loss epoch {0}: {1}'.format(i, total_loss/n_batches))
 
@@ -75,14 +82,23 @@ with tf.Session() as sess:
 	# test the model
 	preds = tf.nn.softmax(logits)
 	correct_preds = tf.equal(tf.argmax(preds, 1), tf.argmax(Y, 1))
-	accuracy = tf.reduce_sum(tf.cast(correct_preds, tf.float32)) # need numpy.count_nonzero(boolarr) :(
+	accuracy = tf.reduce_sum(tf.cast(correct_preds, tf.float32), axis=None) # need numpy.count_nonzero(boolarr) :(
 	
 	n_batches = int(mnist.test.num_examples/batch_size)
 	total_correct_preds = 0
 	
 	for i in range(n_batches):
 		X_batch, Y_batch = mnist.test.next_batch(batch_size)
-		accuracy_batch = sess.run([accuracy], feed_dict={X: X_batch, Y:Y_batch}) 
-		total_correct_preds += accuracy_batch	
+        # I get a TypeError: unsupported operand type(s) for +=: 'float' and 'list' first,
+        # and i add a comma after the 'accuracy_batch'
+        # accuracy_batch, = sess.run([accuracy], feed_dict={X: X_batch, Y:Y_batch})
+        # In fact, float32 is not iteratable, so we use sess.run([accuracy], ...)
+        # instead of sess.run(accuracy, ...), as a result the return of the sess.run
+        # becomes a list with one float32 value in it.
+        # So we use 'accuracy_batch, ' to receive the first value in that list,
+        # and get a float32 type.
+        # Or we can use 'total_correct_preds += accuracy_batch[0]' to avoid this TypeError
+		accuracy_batch, = sess.run([accuracy], feed_dict={X: X_batch, Y:Y_batch}) 
+		total_correct_preds += accuracy_batch
 	
 	print('Accuracy {0}'.format(total_correct_preds/mnist.test.num_examples))
