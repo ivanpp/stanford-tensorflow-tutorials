@@ -49,7 +49,7 @@ def word2vec(batch_gen):
                                                     stddev=1.0 / (EMBED_SIZE ** 0.5)), 
                                                     name='nce_weight')
         nce_bias = tf.Variable(tf.zeros([VOCAB_SIZE]), name='nce_bias')
-
+        
         # define loss function to be NCE loss function
         loss = tf.reduce_mean(tf.nn.nce_loss(weights=nce_weight, 
                                             biases=nce_bias, 
